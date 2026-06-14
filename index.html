@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>AstroX — Crash Rocket</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ===== Custom display font (Benzin-style) =====
+   Drop real Benzin files next to index.html (Benzin-Bold.woff2 / .ttf)
+   and they will be used automatically. Unbounded is the free fallback. */
+@font-face{
+  font-family:'Benzin';
+  src:url('fonts/Benzin-Bold.woff2') format('woff2'),
+      url('fonts/Benzin-Bold.ttf') format('truetype');
+  font-weight:700;font-style:normal;font-display:swap;
+}
+@font-face{
+  font-family:'Benzin';
+  src:url('fonts/Benzin-ExtraBold.woff2') format('woff2'),
+      url('fonts/Benzin-ExtraBold.ttf') format('truetype');
+  font-weight:800;font-style:normal;font-display:swap;
+}
+:root{
+  --bg:#050a18;--bg2:#0a1430;--violet:#3b82f6;--violet-2:#60a5fa;--violet-3:#93c5fd;
+  --glow:#2563eb;--text:#ECEAF6;--muted:#9d98b8;--muted-2:#6f6a8d;
+  --card:rgba(255,255,255,0.04);--card-brd:rgba(255,255,255,0.09);--radius:18px;
+  --green:#34d399;--red:#fb7185;--gold:#fbbf24;
+  --display:'Benzin','Unbounded','Sora',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;-webkit-font-smoothing:antialiased;overscroll-behavior:none}
+
+/* ===== animated background ===== */
+.bg-wrap{position:fixed;inset:0;z-index:0;overflow:hidden;background:
+  radial-gradient(1200px 800px at 50% -10%, #18103a 0%, transparent 60%),
+  radial-gradient(900px 700px at 85% 10%, #1a0f33 0%, transparent 55%),
+  linear-gradient(180deg,#050a18 0%, #081226 100%)}
+.aurora{position:absolute;inset:-20%;background:
+  conic-gradient(from 0deg at 50% 50%, rgba(37,99,235,.0), rgba(96,165,250,.18), rgba(147,51,234,.0), rgba(109,40,217,.16), rgba(37,99,235,.0));
+  filter:blur(60px);opacity:.7;animation:spin 26s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.5;animation:float 16s ease-in-out infinite}
+.orb.a{width:420px;height:420px;left:50%;top:4%;transform:translateX(-50%);background:radial-gradient(circle,#2563eb,#0c2a6b 60%,transparent 70%)}
+.orb.b{width:300px;height:300px;left:-6%;top:42%;background:radial-gradient(circle,#1d4ed8,transparent 70%);animation-delay:-4s}
+.orb.c{width:340px;height:340px;right:-8%;top:55%;background:radial-gradient(circle,#9333ea,transparent 70%);animation-delay:-8s}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-32px)}}
+.grain{position:absolute;inset:0;opacity:.05;background-image:radial-gradient(rgba(255,255,255,.6) 1px,transparent 1px);background-size:3px 3px;pointer-events:none}
+.stars{position:absolute;inset:0;pointer-events:none}
+.star{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.4;animation:tw 4s ease-in-out infinite}
+@keyframes tw{0%,100%{opacity:.15}50%{opacity:.7}}
+
+.app{position:relative;z-index:2;max-width:520px;margin:0 auto;padding:0 16px 30px;min-height:100%}
+
+/* ===== top bar ===== */
+nav{display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:30;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-size:16px;letter-spacing:.02em}
+.brand .logo{width:36px;height:36px;border-radius:11px;background:radial-gradient(circle at 30% 30%,#93c5fd,#2563eb 60%,#1e3a8a);box-shadow:0 0 22px rgba(37,99,235,.7), inset 0 0 12px rgba(255,255,255,.35);display:grid;place-items:center;font-size:18px;animation:logoPulse 3s ease-in-out infinite}
+@keyframes logoPulse{0%,100%{box-shadow:0 0 18px rgba(37,99,235,.6),inset 0 0 12px rgba(255,255,255,.35)}50%{box-shadow:0 0 30px rgba(37,99,235,.95),inset 0 0 14px rgba(255,255,255,.5)}}
+.balance{display:flex;align-items:center;gap:8px;padding:8px 14px;border-radius:999px;border:1px solid var(--card-brd);background:rgba(255,255,255,.04);backdrop-filter:blur(8px);transition:.25s}
+.balance.bump{transform:scale(1.08);border-color:rgba(251,191,36,.6);box-shadow:0 0 20px rgba(251,191,36,.4)}
+.balance .coin{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#fde68a,#f59e0b 70%);display:grid;place-items:center;font-size:11px;font-weight:800;color:#5b3a00;box-shadow:0 0 10px rgba(245,158,11,.6);position:relative;overflow:hidden}
+.balance .coin::after{content:'';position:absolute;top:-60%;left:-30%;width:40%;height:220%;background:rgba(255,255,255,.7);transform:rotate(25deg);filter:blur(2px);animation:shine 3.2s ease-in-out infinite}
+@keyframes shine{0%,70%{left:-40%}85%,100%{left:130%}}
+.balance .amt{font-family:var(--display);font-weight:700;font-size:15px}
+.balance .lh{font-size:11px;color:var(--violet-3);font-weight:700}
+
+/* ===== game stage ===== */
+.stage{margin-top:10px;position:relative;height:368px;border-radius:24px;overflow:hidden;
+  background:radial-gradient(120% 80% at 50% 100%, rgba(37,99,235,.18), transparent 60%),linear-gradient(180deg, rgba(18,13,38,.6), rgba(8,6,20,.7));
+  backdrop-filter:blur(8px);box-shadow:0 30px 80px rgba(0,0,0,.5);transition:filter .5s}
+/* animated gradient border */
+.stage::before{content:'';position:absolute;inset:0;border-radius:24px;padding:1.5px;
+  background:conic-gradient(from var(--ang,0deg), rgba(59,130,246,.0),rgba(96,165,250,.9),rgba(52,211,153,.0),rgba(37,99,235,.8),rgba(59,130,246,.0));
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;
+  opacity:.55;animation:angle 8s linear infinite;pointer-events:none;z-index:9}
+@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false}
+@keyframes angle{to{--ang:360deg}}
+.stage.boom{animation:boom .5s ease}
+@keyframes boom{0%{filter:blur(0) brightness(1)}25%{filter:blur(5px) brightness(1.5) saturate(1.4)}100%{filter:blur(0) brightness(1)}}
+.flash{position:absolute;inset:0;z-index:8;background:radial-gradient(circle at 50% 60%,rgba(251,113,133,.5),transparent 60%);opacity:0;pointer-events:none}
+.flash.on{animation:flash .5s ease}
+@keyframes flash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(96,165,250,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(96,165,250,.06) 1px,transparent 1px);background-size:38px 38px;mask-image:linear-gradient(180deg,transparent,#000 30%)}
+.trail{position:absolute;left:0;bottom:0;width:100%;height:100%;pointer-events:none}
+
+.cup-wrap{position:absolute;left:50%;bottom:14px;width:128px;z-index:5;will-change:transform}
+.cup-aura{position:absolute;left:50%;top:50%;width:200px;height:200px;transform:translate(-50%,-50%) scale(var(--aura,1));border-radius:50%;background:radial-gradient(circle,rgba(96,165,250,.55),rgba(37,99,235,.18) 45%,transparent 70%);filter:blur(14px);z-index:-1;transition:transform .2s}
+.cup-inner{width:100%;transform:rotate(0deg);filter:drop-shadow(0 14px 26px rgba(37,99,235,.55))}
+.cup-wrap.flying .cup-inner{animation:bob 1.8s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:rotate(-10deg) translateY(0)}50%{transform:rotate(-5deg) translateY(-6px)}}
+.cup-inner img,.cup-inner svg{width:100%;display:block;pointer-events:none;user-select:none}
+.flame{transform-origin:60px 134px;animation:flame .2s ease-in-out infinite alternate}
+@keyframes flame{from{transform:scaleY(.8)}to{transform:scaleY(1.3)}}
+.cup-wrap.crashed{animation:tipover .9s cubic-bezier(.5,-0.2,.6,1.2) forwards}
+@keyframes tipover{0%{transform:translate(-50%,0) rotate(0)}100%{transform:translate(-26%,46px) rotate(104deg);opacity:.2;filter:blur(2px)}}
+
+.multi{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:6}
+.multi .x{font-family:var(--display);font-weight:800;font-size:64px;letter-spacing:.01em;line-height:1;
+  background:linear-gradient(180deg,#fff,#93c5fd);-webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 6px 40px rgba(37,99,235,.5);transform:scale(var(--mscale,1));transition:transform .12s ease-out}
+.multi .state{margin-top:10px;font-size:12px;color:var(--violet-3);letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.multi.crashed .x{background:linear-gradient(180deg,#fecaca,#fb7185);-webkit-background-clip:text;background-clip:text;color:transparent;animation:shake .4s}
+@keyframes shake{0%,100%{transform:translateX(0) scale(1)}25%{transform:translateX(-8px) scale(1.04)}75%{transform:translateX(8px) scale(1.04)}}
+
+/* frosted blur overlay during countdown */
+.countdown{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:7;gap:14px;background:rgba(8,6,20,.35);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.countdown .ring{width:124px;height:124px;position:relative;display:grid;place-items:center}
+.countdown .ring svg{position:absolute;inset:0;transform:rotate(-90deg);filter:drop-shadow(0 0 8px rgba(59,130,246,.7))}
+.countdown .ring .num{font-family:var(--display);font-weight:800;font-size:48px}
+.countdown .lbl{font-size:12px;color:var(--muted);letter-spacing:.14em;text-transform:uppercase;font-weight:600}
+.countdown .go{font-size:12.5px;color:var(--violet-3)}
+
+.history{position:absolute;top:12px;left:12px;right:12px;display:flex;gap:6px;flex-wrap:wrap;z-index:8}
+.htag{font-size:11.5px;font-weight:700;padding:4px 9px;border-radius:999px;font-family:var(--display);background:rgba(255,255,255,.06);border:1px solid var(--card-brd);animation:popin .3s ease both}
+@keyframes popin{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.htag.lo{color:#fca5a5;border-color:rgba(251,113,133,.35)}
+.htag.mid{color:var(--violet-3);border-color:rgba(59,130,246,.4)}
+.htag.hi{color:#86efac;border-color:rgba(52,211,153,.4);box-shadow:0 0 12px rgba(52,211,153,.25)}
+
+/* ===== bet panel ===== */
+.panel{margin-top:14px;background:var(--card);border:1px solid var(--card-brd);border-radius:var(--radius);padding:14px;backdrop-filter:blur(16px);box-shadow:0 14px 40px rgba(0,0,0,.3)}
+.bet-row{display:flex;align-items:center;gap:10px}
+.bet-input{flex:1;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.04);border:1px solid var(--card-brd);border-radius:13px;padding:10px 12px;transition:.2s}
+.bet-input:focus-within{border-color:var(--violet);box-shadow:0 0 0 3px rgba(37,99,235,.18)}
+.bet-input input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-size:20px;font-family:var(--display);font-weight:700;width:100%}
+.bet-input .lh{font-size:12px;color:var(--violet-3);font-weight:700}
+.chips{display:flex;gap:6px}
+.chip{padding:9px 11px;border-radius:11px;border:1px solid var(--card-brd);background:rgba(255,255,255,.04);color:var(--muted);font-size:12.5px;font-weight:600;cursor:pointer;transition:.15s}
+.chip:hover,.chip:active{color:#fff;border-color:var(--violet);box-shadow:0 0 14px rgba(37,99,235,.4)}
+.quick{display:flex;gap:8px;margin-top:10px}
+.quick button{flex:1;padding:8px;border-radius:11px;border:1px solid var(--card-brd);background:rgba(255,255,255,.03);color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s}
+.quick button:hover,.quick button:active{color:#fff;border-color:var(--violet)}
+
+.action{position:relative;width:100%;margin-top:12px;padding:17px;border-radius:15px;border:none;cursor:pointer;font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.01em;color:#fff;transition:.2s;background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 10px 30px rgba(37,99,235,.45);overflow:hidden}
+.action::after{content:'';position:absolute;top:0;left:-120%;width:60%;height:100%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg);animation:sweep 3.5s ease-in-out infinite}
+@keyframes sweep{0%,60%{left:-120%}80%,100%{left:160%}}
+.action:hover{transform:translateY(-1px);box-shadow:0 14px 38px rgba(37,99,235,.6)}
+.action:active{transform:translateY(0)}
+.action.cashout{background:linear-gradient(135deg,#34d399,#059669);box-shadow:0 10px 30px rgba(16,185,129,.5);animation:cashpulse 1s ease-in-out infinite}
+@keyframes cashpulse{0%,100%{box-shadow:0 10px 30px rgba(16,185,129,.45)}50%{box-shadow:0 10px 42px rgba(16,185,129,.8)}}
+.action.placed{background:linear-gradient(135deg,#f59e0b,#d97706);box-shadow:0 10px 30px rgba(217,119,6,.4)}
+.action:disabled{opacity:.5;cursor:not-allowed;transform:none;box-shadow:none}
+.action:disabled::after{display:none}
+.action .sub{display:block;font-size:12px;font-weight:500;font-family:'Inter';opacity:.9;margin-top:2px}
+
+.faucet{position:relative;width:100%;margin-top:10px;padding:13px;border-radius:13px;border:1px dashed rgba(251,191,36,.5);background:rgba(251,191,36,.08);color:var(--gold);font-family:var(--display);font-weight:700;font-size:14.5px;cursor:pointer;transition:.2s;display:flex;align-items:center;justify-content:center;gap:8px;overflow:hidden}
+.faucet:hover{border-color:var(--gold);box-shadow:0 0 22px rgba(251,191,36,.3)}
+.faucet:disabled{opacity:.5;cursor:not-allowed;box-shadow:none;border-style:solid}
+.faucet .c{width:18px;height:18px;border-radius:50%;background:radial-gradient(circle at 32% 30%,#fde68a,#f59e0b 70%);display:grid;place-items:center;font-size:9px;font-weight:800;color:#5b3a00}
+
+/* ===== players ===== */
+.section-head{display:flex;align-items:center;justify-content:space-between;margin:20px 4px 12px}
+.section-head h2{font-family:var(--display);font-weight:700;font-size:16px;letter-spacing:.01em;display:flex;align-items:center;gap:8px}
+.section-head .live{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;color:var(--green)}
+.section-head .live .pulse{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:beat 1.6s infinite}
+@keyframes beat{0%,100%{opacity:1}50%{opacity:.3}}
+.bank{margin:0 4px 10px;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;color:var(--muted)}
+.bank b{font-family:var(--display);color:var(--violet-3);font-weight:700}
+
+.players{background:var(--card);border:1px solid var(--card-brd);border-radius:var(--radius);backdrop-filter:blur(14px);overflow:hidden}
+.player{display:flex;align-items:center;gap:11px;padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.05);transition:background .2s;animation:slidein .3s ease both}
+@keyframes slidein{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:none}}
+.player:last-child{border-bottom:none}
+.player.me{background:rgba(37,99,235,.12)}
+.player .av{width:34px;height:34px;border-radius:10px;flex-shrink:0;display:grid;place-items:center;font-size:14px;font-weight:700;font-family:var(--display);overflow:hidden}
+.player .av img{width:100%;height:100%;object-fit:cover}
+.player .nm{flex:1;min-width:0}
+.player .nm .n{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.player .nm .b{font-size:11.5px;color:var(--muted-2)}
+.player .res{font-family:var(--display);font-weight:700;font-size:13.5px;text-align:right;flex-shrink:0}
+.player .res .badge{font-size:10.5px;font-weight:600;font-family:'Inter';padding:2px 8px;border-radius:999px;display:inline-block;margin-top:3px}
+.badge.wait{background:rgba(255,255,255,.07);color:var(--muted)}
+.badge.play{background:rgba(59,130,246,.2);color:var(--violet-3)}
+.badge.win{background:rgba(52,211,153,.18);color:#86efac}
+.badge.lose{background:rgba(251,113,133,.16);color:#fca5a5}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);z-index:99;background:rgba(20,16,42,.95);border:1px solid var(--card-brd);padding:13px 20px;border-radius:13px;font-size:14px;font-weight:500;backdrop-filter:blur(14px);box-shadow:0 14px 40px rgba(0,0,0,.5);opacity:0;transition:.35s;max-width:90%;text-align:center}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.err{border-color:var(--red);color:#fecaca}
+.toast.ok{border-color:var(--green);color:#bbf7d0}
+.toast.gold{border-color:var(--gold);color:#fde68a}
+
+.footer{text-align:center;color:var(--muted-2);font-size:11.5px;padding:24px 0 10px;line-height:1.6}
+.float-coin{position:fixed;font-family:var(--display);font-weight:700;font-size:22px;color:var(--gold);z-index:90;pointer-events:none;animation:floatup 1.1s ease-out forwards;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+@keyframes floatup{0%{opacity:0;transform:translateY(0) scale(.7)}20%{opacity:1}100%{opacity:0;transform:translateY(-80px) scale(1.15)}}
+</style>
+</head>
+<body>
+<div class="bg-wrap">
+  <div class="aurora"></div>
+  <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
+  <div class="stars" id="stars"></div><div class="grain"></div>
+</div>
+
+<div class="app">
+  <nav>
+    <div class="brand"><div class="logo">🚀</div>ASTRO&nbsp;X</div>
+    <div class="balance" id="balanceBox">
+      <div class="coin">L</div>
+      <div><span class="amt" id="balance">0</span> <span class="lh">AX</span></div>
+    </div>
+  </nav>
+
+  <div class="stage" id="stage">
+    <div class="grid-lines"></div>
+    <div class="history" id="history"></div>
+    <canvas class="trail" id="trail"></canvas>
+    <div class="flash" id="flash"></div>
+    <div class="cup-wrap" id="cup">
+      <div class="cup-aura" id="aura"></div>
+      <div class="cup-inner"><svg class="rocket" viewBox="0 0 120 175" width="100%" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="rkBody" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#eff6ff"/><stop offset=".45" stop-color="#93c5fd"/><stop offset="1" stop-color="#3b82f6"/></linearGradient><linearGradient id="rkFin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1d4ed8"/></linearGradient><radialGradient id="rkWin" cx=".4" cy=".35" r=".75"><stop offset="0" stop-color="#e0f2fe"/><stop offset=".55" stop-color="#38bdf8"/><stop offset="1" stop-color="#075985"/></radialGradient><linearGradient id="rkFlame" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".3" stop-color="#fde68a"/><stop offset=".7" stop-color="#fb923c"/><stop offset="1" stop-color="#ef4444" stop-opacity="0"/></linearGradient></defs><path class="flame" d="M47 134 Q60 178 73 134 Q60 150 47 134 Z" fill="url(#rkFlame)"/><path d="M41 92 L21 132 L42 120 Z" fill="url(#rkFin)"/><path d="M79 92 L99 132 L78 120 Z" fill="url(#rkFin)"/><path d="M60 6 C83 30 86 72 80 110 C79 125 71 134 60 134 C49 134 41 125 40 110 C34 72 37 30 60 6 Z" fill="url(#rkBody)" stroke="#1e3a8a" stroke-width="1.5"/><circle cx="60" cy="56" r="15" fill="url(#rkWin)" stroke="#1e3a8a" stroke-width="2"/><circle cx="55" cy="51" r="4" fill="#fff" opacity=".85"/><path d="M60 8 C71 32 73 82 67 132" fill="none" stroke="#fff" stroke-opacity=".4" stroke-width="2"/></svg></div>
+    </div>
+    <div class="multi" id="multiBox">
+      <div class="x" id="multiX">1.00x</div>
+      <div class="state" id="stateLbl">ждём ставки</div>
+    </div>
+    <div class="countdown" id="countdown" style="display:none">
+      <div class="ring">
+        <svg width="124" height="124"><circle cx="62" cy="62" r="54" stroke="rgba(255,255,255,.08)" stroke-width="8" fill="none"/><circle id="cdArc" cx="62" cy="62" r="54" stroke="#3b82f6" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="339.292" stroke-dashoffset="0"/></svg>
+        <div class="num" id="cdNum">10</div>
+      </div>
+      <div class="lbl">следующий раунд</div>
+      <div class="go">делайте ставку 👇</div>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="bet-row">
+      <div class="bet-input">
+        <input id="betInput" type="number" inputmode="numeric" value="50" min="1">
+        <span class="lh">AX</span>
+      </div>
+      <div class="chips">
+        <button class="chip" data-add="10">+10</button>
+        <button class="chip" data-add="50">+50</button>
+        <button class="chip" data-add="100">+100</button>
+      </div>
+    </div>
+    <div class="quick">
+      <button data-set="min">MIN</button>
+      <button data-mul="0.5">1/2</button>
+      <button data-mul="2">x2</button>
+      <button data-set="max">MAX</button>
+    </div>
+    <button class="action" id="actionBtn">Сделать ставку</button>
+    <button class="faucet" id="faucetBtn"><span class="c">L</span> Получить 1000 AX</button>
+  </div>
+
+  <div class="section-head">
+    <h2>👥 Игроки в раунде</h2>
+    <span class="live"><span class="pulse"></span><span id="playerCount">0</span> онлайн</span>
+  </div>
+  <div class="bank"><span>Банк раунда</span><b id="bankVal">0 AX</b></div>
+  <div class="players" id="players"></div>
+
+  <div class="footer">AstroX — демо-игра на виртуальные монеты AX.<br>Игра не связана с реальными деньгами · 18+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $=id=>document.getElementById(id);
+const starBox=$('stars');
+for(let i=0;i<60;i++){const s=document.createElement('div');s.className='star';s.style.left=Math.random()*100+'%';s.style.top=Math.random()*100+'%';s.style.animationDelay=(Math.random()*4)+'s';starBox.appendChild(s);}
+
+/* ---- Telegram ---- */
+let tg=null, me={name:'Вы', initial:'Я', photo:null, id:'me'};
+try{
+  tg=window.Telegram&&window.Telegram.WebApp;
+  if(tg){tg.ready();tg.expand();
+    try{tg.setHeaderColor&&tg.setHeaderColor('#050a18');tg.setBackgroundColor&&tg.setBackgroundColor('#050a18');}catch(e){}
+    const u=tg.initDataUnsafe&&tg.initDataUnsafe.user;
+    if(u){me.name=[u.first_name,u.last_name].filter(Boolean).join(' ')||u.username||'Вы';
+      me.initial=(u.first_name||u.username||'Я').charAt(0).toUpperCase();
+      me.photo=u.photo_url||null;me.id='tg'+u.id;}
+  }
+}catch(e){}
+
+/* ---- balance ---- */
+let balance=parseInt(localStorage.getItem('lh_balance'));
+if(isNaN(balance)){balance=500;localStorage.setItem('lh_balance','500');}
+function setBalance(v,bump){balance=Math.max(0,Math.round(v));$('balance').textContent=balance.toLocaleString('ru-RU');localStorage.setItem('lh_balance',balance);if(bump){const b=$('balanceBox');b.classList.add('bump');setTimeout(()=>b.classList.remove('bump'),300);}}
+setBalance(balance);
+
+function toast(msg,type){const t=$('toast');t.textContent=msg;t.className='toast show '+(type||'');clearTimeout(t._t);t._t=setTimeout(()=>t.className='toast '+(type||''),2600);}
+function haptic(kind){try{if(tg&&tg.HapticFeedback){if(kind==='win')tg.HapticFeedback.notificationOccurred('success');else if(kind==='lose')tg.HapticFeedback.notificationOccurred('error');else tg.HapticFeedback.impactOccurred('light');}}catch(e){}}
+function floatCoin(text){const el=document.createElement('div');el.className='float-coin';el.textContent=text;const r=$('faucetBtn').getBoundingClientRect();el.style.left=(r.left+r.width/2-20)+'px';el.style.top=(r.top-10)+'px';document.body.appendChild(el);setTimeout(()=>el.remove(),1100);}
+
+/* ---- faucet ---- */
+const FAUCET_MS=60*1000;
+function faucetReady(){const last=parseInt(localStorage.getItem('lh_faucet')||'0');return Date.now()-last>=FAUCET_MS?0:FAUCET_MS-(Date.now()-last);}
+function refreshFaucet(){const left=faucetReady();const b=$('faucetBtn');if(left<=0){b.disabled=false;b.innerHTML='<span class="c">L</span> Получить 1000 AX';}else{b.disabled=true;b.innerHTML='<span class="c">L</span> Снова через '+Math.ceil(left/1000)+'с';}}
+$('faucetBtn').onclick=()=>{if(faucetReady()>0)return;setBalance(balance+1000,true);localStorage.setItem('lh_faucet',Date.now());floatCoin('+1000');haptic('win');toast('Начислено 1000 AX 🚀','gold');refreshFaucet();};
+setInterval(refreshFaucet,1000);refreshFaucet();
+
+/* ---- bet controls ---- */
+const betInput=$('betInput');
+function getBet(){return Math.max(1,Math.floor(Number(betInput.value)||0));}
+function setBet(v){betInput.value=Math.max(1,Math.min(balance||1,Math.floor(v)));}
+document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{setBet(getBet()+Number(c.dataset.add));haptic();});
+document.querySelectorAll('.quick button').forEach(b=>b.onclick=()=>{haptic();if(b.dataset.set==='min')setBet(10);else if(b.dataset.set==='max')setBet(balance);else if(b.dataset.mul)setBet(getBet()*Number(b.dataset.mul));});
+
+/* ===================== GAME ENGINE ===================== */
+let phase='betting';
+let roundMulti=1, crashAt=0, flyStart=0, rafId=0, flewAway=false;
+let myBet=null;
+let history=[];
+let bots=[];
+
+const BOT_NAMES=['CodeineKing','PurpleDrank','SippinSlow','Lil_Stack','DirtySprite','Wock_God','DoubleCup','FaygoFlow','Texas_Tea','MudWater','ActavisFan','LeanLord','DJ_Screw','Houston77','SyrupSeeker','NightOwl','Memphis','Frozone','PimpCup','SlowMotion'];
+const BOT_COLORS=['#2563eb','#db2777','#0ea5e9','#f59e0b','#10b981','#ef4444','#3b82f6','#14b8a6','#f43f5e','#6366f1'];
+function rnd(a,b){return a+Math.random()*(b-a);}
+function pick(a){return a[Math.floor(Math.random()*a.length)];}
+
+function genCrash(){
+  const r=Math.random();
+  if(r<0.40)return +(1.00+Math.random()*1.00).toFixed(2);   // 40% : 1.00x-2.00x
+  if(r<0.90)return +(2.00+Math.random()*8.00).toFixed(2);   // 50% : 2x-10x
+  return +(10.00+Math.random()*90.00).toFixed(2);           // 10% : 10x-100x
+}
+function spawnBots(){
+  bots=[];const n=Math.floor(rnd(5,11));const used={};
+  for(let i=0;i<n;i++){let nm=pick(BOT_NAMES);let g=0;while(used[nm]&&g<5){nm=pick(BOT_NAMES);g++;}used[nm]=1;
+    bots.push({id:'b'+i,name:nm,initial:nm.charAt(0).toUpperCase(),color:pick(BOT_COLORS),
+      bet:Math.floor(rnd(10,500)/5)*5,target:Math.random()<0.06?null:+rnd(1.15,8).toFixed(2),cashedAt:null,status:'play'});}
+}
+function bankTotal(){let t=bots.reduce((s,b)=>s+b.bet,0);if(myBet)t+=myBet.amount;return t;}
+
+function renderPlayers(){
+  const box=$('players');box.innerHTML='';
+  const list=[];
+  list.push({me:true,name:me.name,initial:me.initial,photo:me.photo,color:'#2563eb',
+    bet:myBet?myBet.amount:null,cashedAt:myBet?myBet.cashedAt:undefined,status:myBet?(myBet.cashedAt?'win':(phase==='crashed'?'lose':(phase==='flying'?'play':'wait'))):'spectate'});
+  bots.forEach(b=>list.push(b));
+  $('playerCount').textContent=list.length + Math.floor(rnd(40,120));
+  $('bankVal').textContent=bankTotal().toLocaleString('ru-RU')+' AX';
+  list.forEach(p=>{
+    if(p.spectate&&!p.bet&&phase!=='betting'&&!p.me)return;
+    const el=document.createElement('div');el.className='player'+(p.me?' me':'');
+    let avInner=p.photo?'<img src="'+p.photo+'" alt="">':p.initial;
+    let avStyle=p.photo?'':'background:linear-gradient(135deg,'+p.color+',#312e81)';
+    let res='',badge='';
+    if(p.bet==null){badge='<span class="badge wait">смотрит</span>';}
+    else if(p.cashedAt){const win=Math.round(p.bet*p.cashedAt);res='<div style="color:var(--green)">+'+win.toLocaleString('ru-RU')+'</div>';badge='<span class="badge win">вывел '+p.cashedAt.toFixed(2)+'x</span>';}
+    else if(p.status==='lose'){res='<div style="color:var(--red)">−'+p.bet.toLocaleString('ru-RU')+'</div>';badge='<span class="badge lose">сгорел</span>';}
+    else if(p.status==='play'){badge='<span class="badge play">в игре</span>';}
+    else{badge='<span class="badge wait">ждёт</span>';}
+    el.innerHTML='<div class="av" style="'+avStyle+'">'+avInner+'</div>'+
+      '<div class="nm"><div class="n">'+esc(p.name)+'</div><div class="b">'+(p.bet!=null?p.bet.toLocaleString('ru-RU')+' AX':'без ставки')+'</div></div>'+
+      '<div class="res">'+res+badge+'</div>';
+    box.appendChild(el);
+  });
+}
+function esc(t){return (t||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));}
+
+function renderHistory(){const h=$('history');h.innerHTML='';history.slice(0,8).forEach(v=>{const t=document.createElement('div');const cls=v<2?'lo':(v<5?'mid':'hi');t.className='htag '+cls;t.textContent=v.toFixed(2)+'x';h.appendChild(t);});}
+
+/* ---- cup + trail ---- */
+const stage=$('stage');const cup=$('cup');const aura=$('aura');
+const canvas=$('trail');const ctx=canvas.getContext('2d');
+function sizeCanvas(){canvas.width=stage.clientWidth;canvas.height=stage.clientHeight;}
+sizeCanvas();window.addEventListener('resize',sizeCanvas);
+let trailPts=[];
+function cupPosForMulti(m){const H=stage.clientHeight,W=stage.clientWidth;const prog=Math.min(1,Math.log(m)/Math.log(12));const x=W*0.5 + Math.sin(prog*2.4)*W*0.16;const y=H-30 - prog*(H-120);return {x,y,prog};}
+function drawTrail(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(trailPts.length<2)return;
+  ctx.beginPath();ctx.moveTo(trailPts[0].x,trailPts[0].y);
+  for(let i=1;i<trailPts.length;i++)ctx.lineTo(trailPts[i].x,trailPts[i].y);
+  const grad=ctx.createLinearGradient(0,canvas.height,0,0);grad.addColorStop(0,'rgba(37,99,235,0)');grad.addColorStop(1,'rgba(96,165,250,.9)');
+  ctx.strokeStyle=grad;ctx.lineWidth=4;ctx.lineJoin='round';ctx.shadowColor='rgba(37,99,235,.6)';ctx.shadowBlur=12;ctx.stroke();
+  ctx.lineTo(trailPts[trailPts.length-1].x,canvas.height);ctx.lineTo(trailPts[0].x,canvas.height);ctx.closePath();
+  ctx.shadowBlur=0;ctx.fillStyle='rgba(37,99,235,.10)';ctx.fill();
+}
+function placeCup(m){const p=cupPosForMulti(m);cup.style.left=p.x+'px';cup.style.bottom=(stage.clientHeight-p.y)+'px';cup.style.transform='translate(-50%,0)';aura.style.setProperty('--aura',(1+p.prog*1.2).toFixed(2));trailPts.push({x:p.x,y:p.y});if(trailPts.length>240)trailPts.shift();drawTrail();}
+
+/* ---- phases ---- */
+function startBetting(){
+  phase='betting';myBet=null;spawnBots();
+  trailPts=[];ctx.clearRect(0,0,canvas.width,canvas.height);
+  cup.classList.remove('crashed','flying');
+  $('multiBox').style.display='none';$('countdown').style.display='flex';
+  cup.style.left='50%';cup.style.bottom='14px';cup.style.transform='translate(-50%,0)';aura.style.setProperty('--aura','1');
+  updateActionBtn();renderPlayers();renderHistory();
+  let t=10;const total=10;$('cdNum').textContent=t;const arc=$('cdArc');const circ=339.292;arc.style.strokeDashoffset='0';
+  clearInterval(window._cd);
+  window._cd=setInterval(()=>{t--;$('cdNum').textContent=Math.max(0,t);arc.style.strokeDashoffset=(circ*(1-t/total)).toFixed(1);if(t<=0){clearInterval(window._cd);startFlying();}},1000);
+}
+function startFlying(){
+  phase='flying';crashAt=genCrash();flewAway=false;
+  $('countdown').style.display='none';$('multiBox').style.display='flex';$('multiBox').classList.remove('crashed');
+  $('stateLbl').textContent=myBet?'выводите вовремя!':'полёт начался';
+  cup.classList.add('flying');updateActionBtn();
+  flyStart=performance.now();roundMulti=1;
+  bots.forEach(b=>{b.cashedAt=null;b.status='play';});renderPlayers();
+  cancelAnimationFrame(rafId);rafId=requestAnimationFrame(tick);
+}
+function tick(now){
+  const t=(now-flyStart)/1000;roundMulti=Math.exp(0.16*t); // медленнее — раунд дольше
+  // боты выходят по своим целям
+  let exited=false;
+  bots.forEach(b=>{if(b.status==='play'&&b.target&&roundMulti>=b.target){b.cashedAt=+b.target.toFixed(2);b.status='win';exited=true;}});
+  // когда ВСЕ участники вышли — ракета улетает на 5x-1000x
+  const inPlay=bots.filter(b=>b.status==='play').length + ((myBet&&!myBet.cashedAt)?1:0);
+  if(!flewAway&&inPlay===0){
+    flewAway=true;
+    const fly=Math.min(1000,Math.max(roundMulti*1.5, 5+Math.pow(Math.random(),1.7)*995));
+    crashAt=+fly.toFixed(2);
+    $('stateLbl').textContent='🚀 все вышли — полёт!';
+    exited=true;
+  }
+  if(roundMulti>=crashAt){roundMulti=crashAt;crash();return;}
+  const mx=$('multiX');mx.textContent=roundMulti.toFixed(2)+'x';
+  mx.style.setProperty('--mscale',(1+Math.min(0.5,(roundMulti-1)*0.05)).toFixed(3));
+  placeCup(roundMulti);
+  if(exited||Math.random()<0.03)renderPlayers();
+  if(myBet&&!myBet.cashedAt)updateActionBtn();
+  rafId=requestAnimationFrame(tick);
+}
+function crash(){
+  phase='crashed';cancelAnimationFrame(rafId);
+  $('multiX').textContent=roundMulti.toFixed(2)+'x';$('multiX').style.setProperty('--mscale','1');
+  $('multiBox').classList.add('crashed');$('stateLbl').textContent='ракета взорвалась!';
+  cup.classList.remove('flying');cup.classList.add('crashed');
+  stage.classList.add('boom');setTimeout(()=>stage.classList.remove('boom'),500);
+  const fl=$('flash');fl.classList.add('on');setTimeout(()=>fl.classList.remove('on'),500);
+  haptic('lose');
+  bots.forEach(b=>{if(b.status==='play')b.status='lose';});
+  if(myBet&&!myBet.cashedAt){myBet.lost=true;}
+  history.unshift(roundMulti);if(history.length>20)history.pop();
+  renderHistory();renderPlayers();updateActionBtn();
+  setTimeout(startBetting,4000);
+}
+
+function updateActionBtn(){
+  const b=$('actionBtn');b.classList.remove('cashout','placed');b.disabled=false;
+  if(phase==='betting'){
+    if(myBet){b.classList.add('placed');b.innerHTML='Ставка принята <span class="sub">'+myBet.amount+' AX · отменить</span>';}
+    else{b.innerHTML='Сделать ставку';}
+  }else if(phase==='flying'){
+    if(myBet&&!myBet.cashedAt){b.classList.add('cashout');const win=Math.round(myBet.amount*roundMulti);b.innerHTML='Забрать <span class="sub">'+win.toLocaleString('ru-RU')+' AX</span>';}
+    else if(myBet&&myBet.cashedAt){b.disabled=true;b.classList.add('placed');b.innerHTML='Выведено '+myBet.cashedAt.toFixed(2)+'x ✅';}
+    else{b.disabled=true;b.innerHTML='Раунд идёт… ждите';}
+  }else{b.disabled=true;b.innerHTML='Раунд окончен';}
+}
+
+$('actionBtn').onclick=()=>{
+  if(phase==='betting'){
+    if(myBet){setBalance(balance+myBet.amount,true);myBet=null;updateActionBtn();renderPlayers();haptic();return;}
+    const amt=getBet();
+    if(amt>balance){toast('Недостаточно AX — получите монеты','err');return;}
+    if(amt<1){toast('Минимальная ставка 1 AX','err');return;}
+    setBalance(balance-amt,true);myBet={amount:amt,cashedAt:null};haptic();toast('Ставка '+amt+' AX принята','ok');updateActionBtn();renderPlayers();
+  }else if(phase==='flying'&&myBet&&!myBet.cashedAt){
+    myBet.cashedAt=roundMulti;const win=Math.round(myBet.amount*roundMulti);
+    setBalance(balance+win,true);haptic('win');toast('Забрали '+win.toLocaleString('ru-RU')+' AX на '+roundMulti.toFixed(2)+'x 🎉','ok');
+    updateActionBtn();renderPlayers();
+  }
+};
+
+startBetting();
+</script>
+</body>
+</html>
